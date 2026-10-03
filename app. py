@@ -1,0 +1,65 @@
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+blogs = []
+
+@app.route("/")
+def home():
+    return jsonify({
+        "message": "Welcome to BlogNest API",
+        "status": "API is running"
+    })
+
+
+@app.route("/blogs", methods=["GET"])
+def get_blogs():
+    return jsonify(blogs)
+
+
+@app.route("/blogs", methods=["POST"])
+def create_blog():
+    data = request.get_json()
+
+    blog = {
+        "id": len(blogs) + 1,
+        "title": data.get("title"),
+        "content": data.get("content"),
+        "author": data.get("author")
+    }
+
+    blogs.append(blog)
+
+    return jsonify({
+        "message": "Blog created successfully",
+        "blog": blog
+    }), 201
+
+
+@app.route("/blogs/<int:blog_id>", methods=["GET"])
+def get_blog(blog_id):
+    for blog in blogs:
+        if blog["id"] == blog_id:
+            return jsonify(blog)
+
+    return jsonify({
+        "error": "Blog not found"
+    }), 404
+
+
+@app.route("/blogs/<int:blog_id>", methods=["DELETE"])
+def delete_blog(blog_id):
+    for blog in blogs:
+        if blog["id"] == blog_id:
+            blogs.remove(blog)
+            return jsonify({
+                "message": "Blog deleted successfully"
+            })
+
+    return jsonify({
+        "error": "Blog not found"
+    }), 404
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
